@@ -37,7 +37,7 @@ adblocker/
 ├── popup.js             # Popup logic
 ├── rules/
 │   └── ad_rules.json    # declarativeNetRequest rules (network blocking)
-└── icons/               # Extension icons (you need to add these)
+└── icons/               # Extension icons
     ├── icon16.png
     ├── icon32.png
     ├── icon48.png
@@ -46,19 +46,7 @@ adblocker/
 
 ---
 
-## Adding Icons
 
-You need to add PNG icons to the `icons/` directory:
-- `icon16.png` (16×16)
-- `icon32.png` (32×32)
-- `icon48.png` (48×48)
-- `icon128.png` (128×128)
-
-You can use any shield or blocker image. Free icons available at:
-- https://www.flaticon.com
-- https://icons8.com
-
----
 
 ## Extending the Blocker
 
