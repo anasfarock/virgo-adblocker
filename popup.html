@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Virgo Ad Blocker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0d0f;
+      --surface: #161618;
+      --surface2: #1e1e22;
+      --border: #2a2a30;
+      --accent: #00e5a0;
+      --accent-dim: rgba(0, 229, 160, 0.12);
+      --accent-glow: rgba(0, 229, 160, 0.35);
+      --text: #f0f0f2;
+      --text-muted: #6b6b75;
+      --danger: #ff4d6a;
+      --danger-dim: rgba(255, 77, 106, 0.12);
+      --warn: #ffb347;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 340px;
+      min-height: 420px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .header {
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      position: relative;
+    }
+
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -1px; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.4;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .logo-icon {
+      width: 28px; height: 28px;
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .logo-name {
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+    }
+
+    .logo-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── Master Toggle ── */
+    .master-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .toggle-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: 'Space Mono', monospace;
+    }
+
+    .switch {
+      position: relative;
+      width: 42px;
+      height: 22px;
+    }
+
+    .switch input { opacity: 0; width: 0; height: 0; }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 22px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .slider::before {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+      left: 3px; top: 3px;
+      background: var(--text-muted);
+      border-radius: 50%;
+      transition: transform 0.3s, background 0.3s;
+    }
+
+    input:checked + .slider {
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+    }
+
+    input:checked + .slider::before {
+      transform: translateX(20px);
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+
+    /* ── Stats Panel ── */
+    .stats {
+      padding: 16px 20px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .stat-card {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+
+    .stat-card:hover {
+      border-color: var(--accent);
+    }
+
+    .stat-number {
+      font-family: 'Space Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── Domain Status ── */
+    .domain-bar {
+      margin: 0 20px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .domain-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .domain-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+      box-shadow: 0 0 6px var(--accent);
+    }
+
+    .domain-dot.whitelisted {
+      background: var(--warn);
+      box-shadow: 0 0 6px rgba(255,179,71,0.5);
+    }
+
+    .domain-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .whitelist-btn {
+      font-size: 10px;
+      padding: 4px 10px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      white-space: nowrap;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .whitelist-btn:hover {
+      border-color: var(--warn);
+      color: var(--warn);
+    }
+
+    .whitelist-btn.active {
+      border-color: var(--warn);
+      color: var(--warn);
+      background: rgba(255,179,71,0.08);
+    }
+
+    /* ── Options Section ── */
+    .options {
+      padding: 0 20px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .section-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .option-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transition: border-color 0.2s;
+    }
+
+    .option-row:hover {
+      border-color: rgba(0,229,160,0.25);
+    }
+
+    .option-left {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .option-icon {
+      font-size: 14px;
+      width: 20px;
+      text-align: center;
+    }
+
+    .option-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .option-desc {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    /* Mini toggle */
+    .mini-switch {
+      position: relative;
+      width: 34px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    .mini-switch input { opacity: 0; width: 0; height: 0; }
+
+    .mini-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 18px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .mini-slider::before {
+      content: '';
+      position: absolute;
+      width: 12px; height: 12px;
+      left: 3px; top: 3px;
+      background: var(--text-muted);
+      border-radius: 50%;
+      transition: transform 0.3s, background 0.3s;
+    }
+
+    input:checked + .mini-slider {
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+    }
+
+    input:checked + .mini-slider::before {
+      transform: translateX(16px);
+      background: var(--accent);
+    }
+
+    /* ── Footer ── */
+    .footer {
+      padding: 10px 20px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border);
+    }
+
+    .reset-btn {
+      font-size: 11px;
+      color: var(--text-muted);
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      transition: color 0.2s;
+    }
+
+    .reset-btn:hover { color: var(--danger); }
+
+    .version {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--border);
+    }
+
+    /* ── Disabled overlay ── */
+    .disabled-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(13,13,15,0.7);
+      backdrop-filter: blur(2px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .disabled-overlay.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .disabled-msg {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      color: var(--danger);
+      text-align: center;
+      padding: 20px;
+      background: var(--surface);
+      border: 1px solid var(--danger);
+      border-radius: 12px;
+    }
+
+    .pulse {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    /* Scan line effect */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.03) 2px,
+        rgba(0,0,0,0.03) 4px
+      );
+      pointer-events: none;
+      z-index: 999;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">🛡</div>
+      <div>
+        <div class="logo-name">CLEANVIEW</div>
+        <div class="logo-sub">Ad Blocker</div>
+      </div>
+    </div>
+    <label class="master-toggle" title="Enable/Disable Virgo Ad Blocker">
+      <span class="toggle-label" id="toggle-label">ON</span>
+      <div class="switch">
+        <input type="checkbox" id="master-toggle" checked />
+        <span class="slider"></span>
+      </div>
+    </label>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-number pulse" id="blocked-count">0</div>
+      <div class="stat-label">Ads Blocked</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="tracker-status">ON</div>
+      <div class="stat-label">Tracker Block</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="popup-status">ON</div>
+      <div class="stat-label">Popup Block</div>
+    </div>
+  </div>
+
+  <!-- Domain Bar -->
+  <div class="domain-bar">
+    <div class="domain-info">
+      <div class="domain-dot" id="domain-dot"></div>
+      <div class="domain-name" id="current-domain">Loading...</div>
+    </div>
+    <button class="whitelist-btn" id="whitelist-btn">Whitelist</button>
+  </div>
+
+  <!-- Options -->
+  <div class="options">
+    <div class="section-label">Protection Settings</div>
+
+    <div class="option-row">
+      <div class="option-left">
+        <span class="option-icon">🚫</span>
+        <div>
+          <div class="option-name">Block Ads</div>
+          <div class="option-desc">Remove display & video ads</div>
+        </div>
+      </div>
+      <label class="mini-switch">
+        <input type="checkbox" id="block-ads" checked />
+        <span class="mini-slider"></span>
+      </label>
+    </div>
+
+    <div class="option-row">
+      <div class="option-left">
+        <span class="option-icon">👁</span>
+        <div>
+          <div class="option-name">Block Trackers</div>
+          <div class="option-desc">Stop cross-site tracking</div>
+        </div>
+      </div>
+      <label class="mini-switch">
+        <input type="checkbox" id="block-trackers" checked />
+        <span class="mini-slider"></span>
+      </label>
+    </div>
+
+    <div class="option-row">
+      <div class="option-left">
+        <span class="option-icon">⬜</span>
+        <div>
+          <div class="option-name">Block Popups</div>
+          <div class="option-desc">Prevent popup windows</div>
+        </div>
+      </div>
+      <label class="mini-switch">
+        <input type="checkbox" id="block-popups" checked />
+        <span class="mini-slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <button class="reset-btn" id="reset-btn">↺ Reset Counter</button>
+    <span class="version">v1.0.0</span>
+  </div>
+
+  <!-- Disabled overlay -->
+  <div class="disabled-overlay" id="disabled-overlay">
+    <div class="disabled-msg">⚠ PROTECTION<br>DISABLED</div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
