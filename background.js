@@ -36,7 +36,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message.type === 'INCREMENT_BLOCKED') {
     chrome.storage.local.get(['blockedCount']).then(({ blockedCount = 0 }) => {
-      chrome.storage.local.set({ blockedCount: blockedCount + 1 });
+      const added = message.count || 1;
+      chrome.storage.local.set({ blockedCount: blockedCount + added });
     });
     return true;
   }
